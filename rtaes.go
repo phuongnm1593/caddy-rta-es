@@ -93,6 +93,7 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	rawBody := buf.String()
 	rawBody = rawBody + "jeje=asasdasd"
 	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
+	r.ContentLength = int64(len(rawBody))
 
 	// return true if anything changed
 	return r.RequestURI != oldURI
