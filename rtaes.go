@@ -1,15 +1,14 @@
 package caddyrtaes
 
 import (
-	"fmt"
-	"io"
+	
 	"net/http"
-	"os"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -25,6 +24,7 @@ type Middleware struct {
 	// Output string `json:"output,omitempty"`
 
 	// w io.Writer
+	logger *zap.Logger
 }
 
 // CaddyModule returns the Caddy module information.
@@ -37,7 +37,7 @@ func (Middleware) CaddyModule() caddy.ModuleInfo {
 
 // Provision implements caddy.Provisioner.
 func (m *Middleware) Provision(ctx caddy.Context) error {
-	m.logger = ctx.Logger(rewr)
+	m.logger = ctx.Logger(m)
 	// switch m.Output {
 	// case "stdout":
 	// 	m.w = os.Stdout
@@ -63,7 +63,7 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 		zap.Object("request", caddyhttp.LoggableHTTPRequest{Request: r}),
 	)
 
-	changed := m.handle(r, repl, logger)
+	changed := m.handle(r, logger)
 
 	if changed {
 		logger.Debug("rewrote request",
@@ -77,7 +77,7 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 // rewrite performs the rewrites on r using repl, which should
 // have been obtained from r, but is passed in for efficiency.
 // It returns true if any changes were made to r.
-func (m Middleware) handle(r *http.Request, repl *caddy.Replacer, logger *zap.Logger) bool {
+func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	oldURI := r.RequestURI
 
 	r.URL.RawQuery = "lala=sdsd"
