@@ -3,6 +3,9 @@ package caddyrtaes
 import (
 	
 	"net/http"
+	"strings"
+	"io"
+	"io/ioutil"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
@@ -84,6 +87,12 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 
 	// update the encoded copy of the URI
 	r.RequestURI = r.URL.RequestURI()
+
+	buf := new(strings.Builder)
+	io.Copy(buf, r.Body)
+	rawBody := buf.String()
+	rawBody = rawBody + "jeje=asasdasd"
+	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
 
 	// return true if anything changed
 	return r.RequestURI != oldURI
