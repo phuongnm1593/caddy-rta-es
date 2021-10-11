@@ -7,7 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os/exec"
-	"encoding/json"
+	//"encoding/json"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
