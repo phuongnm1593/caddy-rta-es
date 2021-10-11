@@ -109,7 +109,7 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
     }
 
 	var result map[string]interface{}
-	json.Unmarshal([]byte(stdout), &result)
+	json.Unmarshal(stdout, &result)
 
 	r.URL.RawQuery = result["uri"].(string)
 	rawBody = result["body"].(string)
