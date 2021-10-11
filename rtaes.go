@@ -87,7 +87,9 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 
 	// r.URL.RawQuery = "lala=sdsd"
 
-	
+	// update the encoded copy of the URI
+	r.RequestURI = r.URL.RequestURI()
+
 	buf := new(strings.Builder)
 	io.Copy(buf, r.Body)
 	rawBody := buf.String()
@@ -108,14 +110,17 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 		return false
     }
 
-	var result map[string]interface{}
-	json.Unmarshal(stdout, &result)
+	// var result map[string]interface{}
+	// json.Unmarshal(stdout, &result)
 
-	r.URL.RawQuery = result["uri"].(string)
-	rawBody = result["body"].(string)
+	// r.URL.RawQuery = result["uri"].(string)
+	// rawBody = result["body"].(string)
 
-	// update the encoded copy of the URI
-	r.RequestURI = r.URL.RequestURI()
+	// // update the encoded copy of the URI
+	// r.RequestURI = r.URL.RequestURI()
+
+    // Print the output
+	rawBody = string(stdout)
 
 	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
 	r.ContentLength = int64(len(rawBody))
