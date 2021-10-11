@@ -6,6 +6,7 @@ import (
 	"strings"
 	"io"
 	"io/ioutil"
+	"os/exec"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
@@ -91,7 +92,25 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	buf := new(strings.Builder)
 	io.Copy(buf, r.Body)
 	rawBody := buf.String()
-	rawBody = rawBody + "jeje=asasdasd"
+
+	// rawBody = rawBody + "jeje=asasdasd"
+	app := "echo"
+
+    arg0 := "-e"
+    arg1 := "Hello world"
+    arg2 := "\n\tfrom"
+    arg3 := "golang"
+
+    cmd := exec.Command(app, arg0, arg1, arg2, arg3)
+    stdout, err := cmd.Output()
+
+    if err != nil {
+		return false
+    }
+
+    // Print the output
+	rawBody = rawBody + string(stdout)
+
 	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
 	r.ContentLength = int64(len(rawBody))
 
