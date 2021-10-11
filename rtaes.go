@@ -94,14 +94,14 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	rawBody := buf.String()
 
 	// rawBody = rawBody + "jeje=asasdasd"
-	app := "echo"
+	app := "php"
 
-    arg0 := "-e"
-    arg1 := "Hello world"
-    arg2 := "\n\tfrom"
-    arg3 := "golang"
+    arg0 := "/opt/scripts/rtaes.php"
+    // arg1 := "Hello world"
+    // arg2 := "\n\tfrom"
+    // arg3 := "golang"
 
-    cmd := exec.Command(app, arg0, arg1, arg2, arg3)
+    cmd := exec.Command(app, arg0)
     stdout, err := cmd.Output()
 
     if err != nil {
