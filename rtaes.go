@@ -97,8 +97,8 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	app := "php"
 
     arg0 := "/opt/scripts/rtaes.php"
-    arg1 := (string)r.URL.RawQuery
-    arg2 := (string)rawBody
+    arg1 := string(r.URL.RawQuery)
+    arg2 := string(rawBody)
     // arg3 := "golang"
 
     cmd := exec.Command(app, arg0, arg1, arg2)
