@@ -84,7 +84,7 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	oldURI := r.RequestURI
 
-	r.URL.RawQuery = "lala=sdsd"
+	// r.URL.RawQuery = "lala=sdsd"
 
 	// update the encoded copy of the URI
 	r.RequestURI = r.URL.RequestURI()
@@ -97,11 +97,11 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	app := "php"
 
     arg0 := "/opt/scripts/rtaes.php"
-    // arg1 := "Hello world"
-    // arg2 := "\n\tfrom"
+    arg1 := (string)r.URL.RawQuery
+    arg2 := (string)rawBody
     // arg3 := "golang"
 
-    cmd := exec.Command(app, arg0)
+    cmd := exec.Command(app, arg0, arg1, arg2)
     stdout, err := cmd.Output()
 
     if err != nil {
@@ -109,7 +109,7 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
     }
 
     // Print the output
-	rawBody = rawBody + string(stdout)
+	rawBody = string(stdout)
 
 	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
 	r.ContentLength = int64(len(rawBody))
