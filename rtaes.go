@@ -114,13 +114,13 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	var result map[string]interface{}
 	json.Unmarshal(stdout, &result)
 
-	// r.URL.Path = result["path"].(string)
-	// r.URL.RawQuery = result["query"].(string)
-	r.RequestURI = result["uri"].(string)
+	r.URL.Path = result["path"].(string)
+	r.URL.RawQuery = result["query"].(string)
+	// r.RequestURI = result["uri"].(string)
 	rawBody = result["body"].(string)
 
 	// update the encoded copy of the URI
-	// r.RequestURI = r.URL.RequestURI()
+	r.RequestURI = r.URL.RequestURI()
 
     // Print the output
 	// rawBody = string(stdout)
