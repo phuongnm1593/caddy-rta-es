@@ -7,7 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os/exec"
-	//"encoding/json"
+	"encoding/json"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
@@ -88,20 +88,21 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	// r.URL.RawQuery = "lala=sdsd"
 
 	// update the encoded copy of the URI
-	r.RequestURI = r.URL.RequestURI()
+	// r.RequestURI = r.URL.RequestURI()
 
 	buf := new(strings.Builder)
 	io.Copy(buf, r.Body)
 	rawBody := buf.String()
 
+	jwtToken := strings.ReplaceAll(r.Header.Get("Authorization"), "Bearer ", "")
+
 	// rawBody = rawBody + "jeje=asasdasd"
 	app := "php"
 
     arg0 := "/opt/scripts/rtaes.php"
-    arg1 := string(r.URL.RawQuery)
+    arg1 := string(oldURI)
     arg2 := string(rawBody)
-	arg3 := string(r.Header.Get("Authorization"))
-    // arg3 := "golang"
+	arg3 := string(jwtToken)
 
     cmd := exec.Command(app, arg0, arg1, arg2, arg3)
     stdout, err := cmd.Output()
@@ -110,17 +111,19 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 		return false
     }
 
-	// var result map[string]interface{}
-	// json.Unmarshal(stdout, &result)
+	var result map[string]interface{}
+	json.Unmarshal(stdout, &result)
 
-	// r.URL.RawQuery = result["uri"].(string)
-	// rawBody = result["body"].(string)
+	// r.URL.Path = result["path"].(string)
+	// r.URL.RawQuery = result["query"].(string)
+	r.RequestURI = result["uri"].(string)
+	rawBody = result["body"].(string)
 
-	// // update the encoded copy of the URI
+	// update the encoded copy of the URI
 	// r.RequestURI = r.URL.RequestURI()
 
     // Print the output
-	rawBody = string(stdout)
+	// rawBody = string(stdout)
 
 	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
 	r.ContentLength = int64(len(rawBody))
