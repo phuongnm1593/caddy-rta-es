@@ -6,7 +6,7 @@ import (
 	// "strings"
 	// "io"
 	// "io/ioutil"
-	// "os"
+	"os"
 	// "encoding/json"
 
 	"github.com/caddyserver/caddy/v2"
@@ -15,9 +15,9 @@ import (
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"go.uber.org/zap"
 
-	// "crypto/aes"
-	// "crypto/cipher"
-	// "crypto/rand"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	// "fmt"
 )
 
@@ -84,6 +84,36 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 	return next.ServeHTTP(w, r)
 }
 
+func encryptData(text []byte) []byte {
+	key := []byte(os.Getenv("CIPHER_KEY"))
+	c, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(c)
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err.Error())
+	}
+
+	result := gcm.Seal(nonce, nonce, text, nil)
+
+	return result
+}
+
+func encryptData(ciphertext []byte) string {
+	key := []byte(os.Getenv("CIPHER_KEY"))
+	c, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(c)
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		panic("ciphertext size is less than nonceSize")
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	plaintext, _ := gcm.Open(nil, nonce, ciphertext, nil)
+
+	return string(plaintext)
+}
 
 // rewrite performs the rewrites on r using repl, which should
 // have been obtained from r, but is passed in for efficiency.
