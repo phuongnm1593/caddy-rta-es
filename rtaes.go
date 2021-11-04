@@ -126,15 +126,15 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	// update the encoded copy of the URI
 	// r.RequestURI = r.URL.RequestURI()
 
-	// buf := new(strings.Builder)
-	// io.Copy(buf, r.Body)
-	// rawBody := buf.String()
+	buf := new(strings.Builder)
+	io.Copy(buf, r.Body)
+	rawBody := buf.String()
 
 	// jwtToken := strings.ReplaceAll(r.Header.Get("Authorization"), "Bearer ", "")
 
 	// decryptedURI := decrypt([]byte(os.Getenv(oldURI)))
 
-	// decryptedBody := decrypt([]byte(os.Getenv(rawBody)))
+	decryptedBody := decrypt([]byte(os.Getenv(rawBody)))
 
 	// rawBody = rawBody + "jeje=asasdasd"
 	// app := "php"
@@ -157,7 +157,7 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	// r.URL.Path = result["path"].(string)
 	// r.URL.RawQuery = result["query"].(string)
 	// r.RequestURI = result["uri"].(string)
-	// rawBody = decryptedBody
+	rawBody = decryptedBody
 
 	// update the encoded copy of the URI
 	// r.RequestURI = r.URL.RequestURI()
@@ -166,8 +166,8 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
     // Print the output
 	// rawBody = string(stdout)
 
-	// r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
-	// r.ContentLength = int64(len(rawBody))
+	r.Body = ioutil.NopCloser(strings.NewReader(rawBody))
+	r.ContentLength = int64(len(rawBody))
 
 	// return true if anything changed
 	return r.RequestURI != oldURI
