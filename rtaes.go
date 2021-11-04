@@ -3,9 +3,9 @@ package caddyrtaes
 import (
 	
 	"net/http"
-	// "strings"
+	"strings"
 	"io"
-	// "io/ioutil"
+	"io/ioutil"
 	"os"
 	// "encoding/json"
 
@@ -134,7 +134,7 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 
 	// decryptedURI := decrypt([]byte(os.Getenv(oldURI)))
 
-	decryptedBody := decrypt([]byte(os.Getenv(rawBody)))
+	decryptedBody := decryptData([]byte(os.Getenv(rawBody)))
 
 	// rawBody = rawBody + "jeje=asasdasd"
 	// app := "php"
