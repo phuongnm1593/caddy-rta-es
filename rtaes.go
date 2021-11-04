@@ -4,7 +4,7 @@ import (
 	
 	"net/http"
 	// "strings"
-	// "io"
+	"io"
 	// "io/ioutil"
 	"os"
 	// "encoding/json"
@@ -99,7 +99,7 @@ func encryptData(text []byte) []byte {
 	return result
 }
 
-func encryptData(ciphertext []byte) string {
+func decryptData(ciphertext []byte) string {
 	key := []byte(os.Getenv("CIPHER_KEY"))
 	c, _ := aes.NewCipher(key)
 	gcm, _ := cipher.NewGCM(c)
