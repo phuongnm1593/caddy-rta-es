@@ -73,12 +73,12 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 		zap.Object("request", caddyhttp.LoggableHTTPRequest{Request: r}),
 	)
 
-	changed := m.handle(r, logger)
+	// changed := m.handle(r, logger)
 
-	if changed {
-		logger.Debug("rewrote request",
-			zap.String("uri", r.RequestURI),
-		)
+	// if changed {
+	// 	logger.Debug("rewrote request",
+	// 		zap.String("uri", r.RequestURI),
+	// 	)
 	}
 
 	return next.ServeHTTP(w, r)
