@@ -6,14 +6,19 @@ import (
 	"strings"
 	"io"
 	"io/ioutil"
-	"os/exec"
-	"encoding/json"
+	"os"
+	// "encoding/json"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"go.uber.org/zap"
+
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	// "fmt"
 )
 
 func init() {
@@ -79,6 +84,37 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 	return next.ServeHTTP(w, r)
 }
 
+func encrypt(text []byte) []byte {
+	key := []byte(os.Getenv("CIPHER_KEY"))
+	c, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(c)
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err.Error())
+	}
+
+	result := gcm.Seal(nonce, nonce, text, nil)
+
+	return result
+}
+
+func decrypt(ciphertext []byte) string {
+	key := []byte(os.Getenv("CIPHER_KEY"))
+	c, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(c)
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		panic("ciphertext size is less than nonceSize")
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	plaintext, _ := gcm.Open(nil, nonce, ciphertext, nil)
+
+	return string(plaintext)
+}
+
 // rewrite performs the rewrites on r using repl, which should
 // have been obtained from r, but is passed in for efficiency.
 // It returns true if any changes were made to r.
@@ -94,33 +130,38 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	io.Copy(buf, r.Body)
 	rawBody := buf.String()
 
-	jwtToken := strings.ReplaceAll(r.Header.Get("Authorization"), "Bearer ", "")
+	// jwtToken := strings.ReplaceAll(r.Header.Get("Authorization"), "Bearer ", "")
+
+	decryptedURI := decrypt([]byte(os.Getenv(oldURI)))
+
+	decryptedBody := decrypt([]byte(os.Getenv(rawBody)))
 
 	// rawBody = rawBody + "jeje=asasdasd"
-	app := "php"
+	// app := "php"
 
-    arg0 := "/opt/scripts/rtaes.php"
-    arg1 := string(oldURI)
-    arg2 := string(rawBody)
-	arg3 := string(jwtToken)
+    // arg0 := "/opt/scripts/rtaes.php"
+    // arg1 := string(oldURI)
+    // arg2 := string(rawBody)
+	// arg3 := string(jwtToken)
 
-    cmd := exec.Command(app, arg0, arg1, arg2, arg3)
-    stdout, err := cmd.Output()
+    // cmd := exec.Command(app, arg0, arg1, arg2, arg3)
+    // stdout, err := cmd.Output()
 
-    if err != nil {
-		return false
-    }
+    // if err != nil {
+	// 	return false
+    // }
 
-	var result map[string]interface{}
-	json.Unmarshal(stdout, &result)
+	// var result map[string]interface{}
+	// json.Unmarshal(stdout, &result)
 
-	r.URL.Path = result["path"].(string)
-	r.URL.RawQuery = result["query"].(string)
+	// r.URL.Path = result["path"].(string)
+	// r.URL.RawQuery = result["query"].(string)
 	// r.RequestURI = result["uri"].(string)
-	rawBody = result["body"].(string)
+	rawBody = decryptedBody
 
 	// update the encoded copy of the URI
-	r.RequestURI = r.URL.RequestURI()
+	// r.RequestURI = r.URL.RequestURI()
+	r.RequestURI = decryptedURI
 
     // Print the output
 	// rawBody = string(stdout)
