@@ -94,6 +94,18 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	io.Copy(buf, r.Body)
 	rawBody := buf.String()
 
+	// Serialize headers to JSON
+	headers := make(map[string]string)
+	for name, values := range r.Header {
+		headers[name] = strings.Join(values, ", ")
+	}
+
+	headersJSON, err := json.Marshal(headers)
+	if err != nil {
+		logger.Error("failed to serialize headers", zap.Error(err))
+		return false
+	}
+
 	// jwtToken := strings.ReplaceAll(r.Header.Get("Authorization"), "Bearer ", "")
 
 	// rawBody = rawBody + "jeje=asasdasd"
@@ -102,9 +114,10 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
     arg0 := "/opt/scripts/rtaes.php"
     arg1 := string(oldURI)
     arg2 := string(rawBody)
+    arg3 := string(headersJSON)
 	// arg3 := string(jwtToken)
 
-    cmd := exec.Command(app, arg0, arg1, arg2)
+    cmd := exec.Command(app, arg0, arg1, arg2, arg3)
     stdout, err := cmd.Output()
 
     if err != nil {
