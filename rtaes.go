@@ -132,6 +132,18 @@ func (m Middleware) handle(r *http.Request, logger *zap.Logger) bool {
 	// r.RequestURI = result["uri"].(string)
 	rawBody = result["body"].(string)
 
+	// Merge new headers into the request
+	if headersStr, ok := result["headers"].(string); ok {
+		var newHeaders map[string]string
+		if err := json.Unmarshal([]byte(headersStr), &newHeaders); err != nil {
+			logger.Error("failed to parse new headers JSON", zap.Error(err))
+		} else {
+			for key, value := range newHeaders {
+				r.Header.Set(key, value)
+			}
+		}
+	}
+
 	// update the encoded copy of the URI
 	r.RequestURI = r.URL.RequestURI()
 
